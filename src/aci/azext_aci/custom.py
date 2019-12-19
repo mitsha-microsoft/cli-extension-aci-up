@@ -13,6 +13,9 @@ def create_aci(cmd, resource_group_name, aci_name, location=None, tags=None):
 def list_aci(cmd, resource_group_name=None):
     raise CLIError('TODO: Implement `aci list`')
 
+def aci_up():
+    #TODO: Implement Az Aci Up
+    print("Welcome to ACI Up!")
 
 def update_aci(cmd, instance, tags=None):
     with cmd.update_context(instance) as c:

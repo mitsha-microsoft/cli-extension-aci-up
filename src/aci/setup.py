@@ -47,10 +47,9 @@ with open('HISTORY.rst', 'r', encoding='utf-8') as f:
 setup(
     name='aci',
     version=VERSION,
-    description='Microsoft Azure Command-Line Tools Aci Extension',
-    # TODO: Update author and email, if applicable
-    author='Microsoft Corporation',
-    author_email='azpycli@microsoft.com',
+    description='Microsoft Azure Command-Line Tools Aci Up Extension',
+    author='Mitesh Shah',
+    author_email='mitsha@microsoft.com',
     # TODO: consider pointing directly to your source code instead of the generic repo
     url='https://github.com/Azure/azure-cli-extensions',
     long_description=README + '\n\n' + HISTORY,

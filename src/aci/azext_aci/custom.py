@@ -36,6 +36,14 @@ def aci_up(code=None):
     languages = get_languages_for_repo(repo_name)
     if not languages:
         raise CLIError('Language Detection has Failed in this Repository.')
+    from azext_aci.common.azure_cli_resources import get_default_subscription_info, get_acr_details
+    acr_details = get_acr_details()
+    logger.debug(acr_details)
+    #TODO: Get the Docker File
+    #TODO: Get the Yaml Workflow file
+    # files = get_yaml_template_for_repo(languages.keys(), acr_details, repo_name)
+
+    logger.warning('Setting up your workflow. This will require 1 or more files to be checked in to the repository.')
     
 
 def _get_repo_name_from_repo_url(repository_url):
@@ -52,7 +60,6 @@ def _get_repo_name_from_repo_url(repository_url):
         return stripped_path
     #TODO: For Azure Repos
     raise CLIError('Could not parse the Repository URL.')
-
 
 def update_aci(cmd, instance, tags=None):
     with cmd.update_context(instance) as c:

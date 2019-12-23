@@ -8,6 +8,7 @@ from knack.log import get_logger
 from knack.prompting import prompt
 
 from azext_aci.common.git import get_repository_url_from_local_repo, uri_parse
+from azext_aci.resources.docker_template import get_docker_file
 
 logger = get_logger(__name__)
 
@@ -36,6 +37,12 @@ def aci_up(code=None):
     languages = get_languages_for_repo(repo_name)
     if not languages:
         raise CLIError('Language Detection has Failed in this Repository.')
+    elif 'Dockerfile' not in languages.keys():
+        get_docker_file(languages)
+        # docker_file = get_docker_file(languages)
+        # if docker_file:
+        #     pass
+            #TODO: Get the Dockerfile and push it to github
     from azext_aci.common.azure_cli_resources import get_default_subscription_info, get_acr_details
     acr_details = get_acr_details()
     logger.debug(acr_details)

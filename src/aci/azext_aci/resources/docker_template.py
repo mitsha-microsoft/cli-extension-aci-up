@@ -1,6 +1,7 @@
 import os
 from knack.log import get_logger
 from knack.util import CLIError
+from azext_aci.common.git_api_helper import Files
 
 logger = get_logger(__name__)
 PACKS_ROOT_STRING = os.path.sep+'packs'+os.path.sep
@@ -20,13 +21,13 @@ def get_docker_file(languages):
                         if file_path.startswith(abs_pack_path):
                             file_path = file_path[len(abs_pack_path):]
                             file_path = file_path.replace('\\','/')
-                        print(file_path)
-                    pass
-                pass
-            pass
+                        file_obj = Files(path=file_path,content=file_content)
+                        logger.debug("Checkin file path: {}".format(file_path))
+                        logger.debug("Checkin file content: {}".format(file_content))
+                        files.append(file_obj)
         except Exception as ex:
             raise CLIError(ex)
-    return None
+    return files
 
 def get_supported_languages_packs_path(languages):
     language = choose_supported_language(languages)

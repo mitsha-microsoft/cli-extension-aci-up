@@ -9,7 +9,12 @@ from knack.help_files import helps  # pylint: disable=unused-import
 
 helps['aci'] = """
     type: group
-    short-summary: Commands to manage Acis.
+    short-summary: Commands to Deploy your Application Directly to Azure Container Instances using GitHub Actions.
+"""
+
+helps['aci up'] = """
+    type: command
+    short-summary: Use this with your code/repository link to Deploy your Code
 """
 
 helps['aci create'] = """

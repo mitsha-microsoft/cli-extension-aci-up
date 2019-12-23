@@ -35,18 +35,16 @@ def aci_up(code=None):
     
     from azext_aci.common.git_api_helper import get_languages_for_repo, push_files_github
     languages = get_languages_for_repo(repo_name)
+    print(languages)
     if not languages:
         raise CLIError('Language Detection has Failed in this Repository.')
     elif 'Dockerfile' not in languages.keys():
-        get_docker_file(languages)
-        # docker_file = get_docker_file(languages)
-        # if docker_file:
-        #     pass
-            #TODO: Get the Dockerfile and push it to github
+        docker_file = get_docker_file(languages)
+        if docker_file:
+            push_files_github(docker_file, repo_name, 'master', True, message='Checking in Dockerfile for Deployment Workflow')
     from azext_aci.common.azure_cli_resources import get_default_subscription_info, get_acr_details
     acr_details = get_acr_details()
     logger.debug(acr_details)
-    #TODO: Get the Docker File
     #TODO: Get the Yaml Workflow file
     # files = get_yaml_template_for_repo(languages.keys(), acr_details, repo_name)
 

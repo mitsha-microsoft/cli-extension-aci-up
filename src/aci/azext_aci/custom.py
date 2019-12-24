@@ -46,14 +46,16 @@ def aci_up(code=None):
     acr_details = get_acr_details()
     logger.debug(acr_details)
     #TODO: Get the Yaml Workflow file
-    files = get_yaml_template_for_repo(languages, acr_details, repo_name)
-    logger.warning('Setting up your workflow. This will require 1 or more files to be checked in to the repository.')
-    for file_name in files:
-        logger.debug("Checkin file path: {}".format(file_name.path))
-        logger.debug("Checkin file content: {}".format(file_name.content))
-    workflow_commit_sha = push_files_github(files, repo_name, 'master', True, message="Setting up Container Deployment Workflow.")
-    print(workflow_commit_sha)
-    print('GitHub workflow is setup for continuous deployment.')
+    # files = get_yaml_template_for_repo(languages, acr_details, repo_name)
+    # logger.warning('Setting up your workflow. This will require 1 or more files to be checked in to the repository.')
+    # for file_name in files:
+    #     logger.debug("Checkin file path: {}".format(file_name.path))
+    #     logger.debug("Checkin file content: {}".format(file_name.content))
+    # workflow_commit_sha = push_files_github(files, repo_name, 'master', True, message="Setting up Container Deployment Workflow.")
+    # print(workflow_commit_sha)
+    # print('GitHub workflow is setup for continuous deployment.')
+    #TODO: Using az acr and etc commands to deploy the container instead of setting up a workflow
+    
     
 
 def _get_repo_name_from_repo_url(repository_url):

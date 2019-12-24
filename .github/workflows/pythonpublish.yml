@@ -1,0 +1,35 @@
+name: Upload Python Package
+
+on:
+  push:
+    branches: ['UsingAzCommands', 'master']
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        cd src/aci
+        pip install setuptools wheel twine
+        python setup.py bdist_wheel
+    - name: Create Release
+      uses: actions/create-release@v1.0.0
+      id: create_release
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      id: upload-release-asses
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/*.whl
+        asset_name: ${{ github.ref }}.whl
+        asset_content_type: application/zip

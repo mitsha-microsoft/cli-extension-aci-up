@@ -72,6 +72,17 @@ def aci_up(code=None):
     ACR_USERNAME = credentials['username']
     ACR_PASSWORD = credentials['passwords'][0]['value']
     #TODO: Using ACR Build Task for now! Check back on how to do this later using something else
+    # Building the Image using ACR Build and then Pushing it to ACR (and fetching the code from GitHub)
+    #TODO: This just handles the 'Code in GitHub' Flow
+    command_for_build = """
+    az acr build -t container_registry_name_place_holder.azurecr.io/app_name_place_holder:{{.Run.ID}} -r container_registry_name_place_holder code_repo_place_holder.git"""
+    try:
+        final_command = command_for_build.replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT).replace(ACR_PLACEHOLDER, acr_details['name']).replace(CODE_REPO_PLACEHOLDER, code)
+        build_logs = sb.check_output(final_command, shell=True)
+        logger.debug(build_logs)
+    except Exception as ex:
+        raise CLIError(ex)
+    print('Container Image Successfully Built.')
     
       
     
@@ -113,4 +124,5 @@ def update_aci(cmd, instance, tags=None):
 
 ACR_PLACEHOLDER = 'container_registry_name_place_holder'
 APP_NAME_PLACEHOLDER = 'app_name_place_holder'
+CODE_REPO_PLACEHOLDER = 'code_repo_place_holder'
 APP_NAME_DEFAULT = 'TestContainerApp'

@@ -3,6 +3,6 @@
 Release History
 ===============
 
-0.0.1
+0.0.1b
 ++++++
-* Initial release.
+* Initial release of the Version using `az` cli Commands.

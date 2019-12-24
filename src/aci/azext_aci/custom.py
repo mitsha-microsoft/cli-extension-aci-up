@@ -3,6 +3,9 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+import subprocess as sb
+import json
+
 from knack.util import CLIError
 from knack.log import get_logger
 from knack.prompting import prompt
@@ -55,7 +58,22 @@ def aci_up(code=None):
     # print(workflow_commit_sha)
     # print('GitHub workflow is setup for continuous deployment.')
     #TODO: Using az acr and etc commands to deploy the container instead of setting up a workflow
+    # Getting the Secret Username and Password for the ACRs
+    #TODO: Instead of using try/catch, we can use if-else to get the status of admin-enabled (already present in acr details). Then we can directly query username and password
+    try:
+        credentials = sb.check_output('az acr credential show -n {}'.format(acr_details['name']), shell=True)
+    except Exception:
+        # If the ACR is not Admin Enabled, credentials are not shown
+        logger.warning('Container Registry {} doesn\'t have admin account enabled. Turning it on.')
+        sb.check_output('az acr update -n {} --admin-enabled true'.format(acr_details['name']), shell=True)
+        credentials = sb.check_output('az acr credential show -n {}'.format(acr_details['name']), shell=True)
+    #TODO: Store the username and password in a more secure way?
+    credentials = json.loads(credentials)
+    ACR_USERNAME = credentials['username']
+    ACR_PASSWORD = credentials['passwords'][0]['value']
+    #TODO: Using ACR Build Task for now! Check back on how to do this later using something else
     
+      
     
 
 def _get_repo_name_from_repo_url(repository_url):

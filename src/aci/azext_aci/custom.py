@@ -71,18 +71,39 @@ def aci_up(code=None):
     credentials = json.loads(credentials)
     ACR_USERNAME = credentials['username']
     ACR_PASSWORD = credentials['passwords'][0]['value']
-    #TODO: Using ACR Build Task for now! Check back on how to do this later using something else
+    #TODO: Using Docker Build instead of ACR Build for Now. Have to check why ACR Build doesn't work properly
     # Building the Image using ACR Build and then Pushing it to ACR (and fetching the code from GitHub)
     #TODO: This just handles the 'Code in GitHub' Flow
-    command_for_build = """
-    az acr build -t container_registry_name_place_holder.azurecr.io/app_name_place_holder:{{.Run.ID}} -r container_registry_name_place_holder code_repo_place_holder.git"""
+    command_for_build = "docker build -t container_registry_name_place_holder.azurecr.io/app_name_place_holder code_repo_place_holder.git"
     try:
         final_command = command_for_build.replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT).replace(ACR_PLACEHOLDER, acr_details['name']).replace(CODE_REPO_PLACEHOLDER, code)
         build_logs = sb.check_output(final_command, shell=True)
         logger.debug(build_logs)
+        command_to_login = "docker login {registry_name}.azurecr.io --username {username} --password {password}".format(registry_name=acr_details['name'], username=ACR_USERNAME, password=ACR_PASSWORD)
+        logger.debug('Logging in to ACR')
+        login_logs = sb.check_output(command_to_login, shell=True)
+        command_to_push = "docker push {registry_name}.azurecr.io/{app_name}".format(registry_name=acr_details['name'], app_name=APP_NAME_DEFAULT)
+        logger.debug('Pushing Image to ACR')
+        push_logs = sb.check_output(command_to_push, shell=True)
+        command_to_logout = "docker logout {registry_name}.azurecr.io".format(registry_name=acr_details['name'])
+        logout_logs = sb.check_output(command_to_logout, shell=True)
     except Exception as ex:
         raise CLIError(ex)
     print('Container Image Successfully Built.')
+    print('Deploying the Container Instance now.')
+    #TODO: Have to open port 8080 for now in ACI. What to do about access? Why not port 80 for the container?
+    command_for_deploy = 'az container create --resource-group {resource_group} --name {app_name} --image {acr_name}.azurecr.io/{app_name}:latest --ports 80 8080 --dns-name-label {app_name} --registry-username {registry_username} --registry-password {registry_password}'.format(resource_group=acr_details['resourceGroup'], app_name=APP_NAME_DEFAULT, acr_name=acr_details['name'], registry_username=ACR_USERNAME, registry_password=ACR_PASSWORD)
+    try:
+        deploy_logs = sb.check_output(command_for_deploy, shell=True)
+        logger.debug(deploy_logs)
+    except Exception as ex:
+        raise CLIError(ex)
+    print('Container Instance successfully deployed.')
+    # Getting the URL of the Deployed Container
+    url_query_command = 'az container show --resource-group {resource_group} --name {app_name} --query ipAddress.fqdn'.format(resource_group=acr_details['resourceGroup'], app_name=APP_NAME_DEFAULT)
+    app_url = sb.check_output(url_query_command, shell=True)
+    print("Here is the URL for your deployed code: ")
+    print('http://'+app_url.decode('utf-8').strip('\n').strip('\r').strip('"')+':8080/')
     
       
     
@@ -125,4 +146,4 @@ def update_aci(cmd, instance, tags=None):
 ACR_PLACEHOLDER = 'container_registry_name_place_holder'
 APP_NAME_PLACEHOLDER = 'app_name_place_holder'
 CODE_REPO_PLACEHOLDER = 'code_repo_place_holder'
-APP_NAME_DEFAULT = 'TestContainerApp'
+APP_NAME_DEFAULT = 'test-app'

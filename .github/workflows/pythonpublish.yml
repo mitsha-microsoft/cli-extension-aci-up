@@ -2,7 +2,7 @@ name: Upload Python Package
 
 on:
   push:
-    branches: ['UsingAzCommands', 'master']
+    branches: ['UsingAzCommands', 'master','mitsha-microsoft-patch-1']
 
 jobs:
   deploy:
@@ -28,6 +28,7 @@ jobs:
         prerelease: false
     - name: Upload Release Asset
       id: upload-release-asses
+      uses: actions/upload-release-asset@v1.0.1
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./dist/*.whl

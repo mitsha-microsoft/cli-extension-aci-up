@@ -37,11 +37,8 @@ def get_supported_languages_packs_path(languages):
 def choose_supported_language(languages):
     list_languages = list(languages.keys())
     first_language = list_languages[0]
-    #TODO: Test whether the packs folder paths work properly or not!
-    abs_packs_path = FILE_ABSOLUTE_PATH + PACKS_ROOT_STRING
-    language_packs_list = os.listdir(abs_packs_path)
-    if first_language.lower() in language_packs_list:
+    if first_language == 'JavaScript' or first_language == 'Python' or first_language == 'Java':
         return first_language
-    elif list_languages[1].lower() in language_packs_list:
+    elif len(list_languages) >= 1 and ( 'JavaScript' == list_languages[1] or 'Java' == list_languages[1] or 'Python' == list_languages[1]):
         return list_languages[1]
     return None

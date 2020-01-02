@@ -8,18 +8,11 @@
 
 from codecs import open
 from setuptools import setup, find_packages
-try:
-    from azure_bdist_wheel import cmdclass
-except ImportError:
-    from distutils import log as logger
-    logger.warn("Wheel is not available, disabling bdist_wheel hook")
 
 # TODO: Confirm this is the right version number you want and it matches your
 # HISTORY.rst entry.
 VERSION = '0.0.1b'
 
-# The full list of classifiers is available at
-# https://pypi.python.org/pypi?%3Aaction=list_classifiers
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
@@ -50,13 +43,12 @@ setup(
     description='Extension to deploy to Azure Container Instances.',
     author='Mitesh Shah',
     author_email='mitsha@microsoft.com',
-    # TODO: consider pointing directly to your source code instead of the generic repo
     url='https://github.com/Azure/azure-cli-extensions',
     long_description=README + '\n\n' + HISTORY,
     license='MIT',
     classifiers=CLASSIFIERS,
-    install_requires=DEPENDENCIES,
     package_data={'azext_aci': ['azext_metadata.json']},
     packages=find_packages(exclude=["*.test","*.test.*","test.*","test"]),
-    install_package_data=True
+    include_package_data=True,
+    install_requires=DEPENDENCIES,
 )

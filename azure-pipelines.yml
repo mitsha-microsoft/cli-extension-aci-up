@@ -1,0 +1,37 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+- UsingAzCommands
+
+pool:
+  vmImage: 'ubuntu-latest'
+strategy:
+  matrix:
+    Python36:
+      python.version: '3.6'
+
+steps:
+  - script: python -m pip install --upgrade pip
+    displayName: 'Upgrade Pip'
+
+  - script: pip install wheel==0.30.0
+    displayName: 'Install Wheel'
+  
+  - script: 'pip install --upgrade .'
+    displayName: 'Pip Upgrade'
+    workingDirectory: 'src/aci/'
+  
+  - script: 'python ./setup.py bdist_wheel'
+    displayName: 'Build wheel for CLI Extension'
+    workingDirectory: 'src/aci/'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Azure AKS deploy CLI Extension as Artifact'
+    inputs:
+     PathtoPublish: 'src/aci/dist'
+     artifactName: 'aci-up-cli-extension'
+     publishLocation: Container

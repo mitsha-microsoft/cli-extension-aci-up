@@ -8,11 +8,6 @@
 
 from codecs import open
 from setuptools import setup, find_packages
-try:
-    from azure_bdist_wheel import cmdclass
-except ImportError:
-    from distutils import log as logger
-    logger.warn("Wheel is not available, disabling bdist_wheel hook")
 
 # TODO: Confirm this is the right version number you want and it matches your
 # HISTORY.rst entry.
@@ -47,15 +42,15 @@ with open('HISTORY.rst', 'r', encoding='utf-8') as f:
 setup(
     name='aci',
     version=VERSION,
-    description='Microsoft Azure Command-Line Tools Aci Up Extension',
+    description='Extension to dpeloy to Azure Container Instances.',
     author='Mitesh Shah',
     author_email='mitsha@microsoft.com',
-    # TODO: consider pointing directly to your source code instead of the generic repo
-    url='https://github.com/Azure/azure-cli-extensions',
+    url='https://github.com/mitsha-microsoft/cli-extension-aci-up',
     long_description=README + '\n\n' + HISTORY,
     license='MIT',
     classifiers=CLASSIFIERS,
-    packages=find_packages(),
-    install_requires=DEPENDENCIES,
     package_data={'azext_aci': ['azext_metadata.json']},
+    packages=find_packages(exclude=["*.test","*.test.*","test.*","test"])
+    include_package_data=True
+    install_requires=DEPENDENCIES
 )

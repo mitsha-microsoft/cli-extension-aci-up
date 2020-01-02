@@ -3,10 +3,12 @@ import requests
 from knack.prompting import prompt, prompt_pass
 from knack.log import get_logger
 from knack.util import CLIError
+from azext_aci.common.utils import singleton
 
 AZ_DEVOPS_GITHUB_PAT_ENVKEY = "GITHUB_PAT"
 logger = get_logger(__name__)
 
+@singleton
 class GithubCredentialManager():
     """
     GithubCredential Manager

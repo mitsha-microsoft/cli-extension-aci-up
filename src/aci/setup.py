@@ -50,7 +50,7 @@ setup(
     license='MIT',
     classifiers=CLASSIFIERS,
     package_data={'azext_aci': ['azext_metadata.json']},
-    packages=find_packages(exclude=["*.test","*.test.*","test.*","test"])
-    include_package_data=True
+    packages=find_packages(exclude=["*.test","*.test.*","test.*","test"]),
+    include_package_data=True,
     install_requires=DEPENDENCIES
 )

@@ -47,7 +47,7 @@ with open('HISTORY.rst', 'r', encoding='utf-8') as f:
 setup(
     name='aci',
     version=VERSION,
-    description='Microsoft Azure Command-Line Tools Aci Up Extension',
+    description='Extension to deploy to Azure Container Instances.',
     author='Mitesh Shah',
     author_email='mitsha@microsoft.com',
     # TODO: consider pointing directly to your source code instead of the generic repo
@@ -55,7 +55,8 @@ setup(
     long_description=README + '\n\n' + HISTORY,
     license='MIT',
     classifiers=CLASSIFIERS,
-    packages=find_packages(),
     install_requires=DEPENDENCIES,
     package_data={'azext_aci': ['azext_metadata.json']},
+    packages=find_packages(exclude=["*.test","*.test.*","test.*","test"]),
+    install_package_data=True
 )

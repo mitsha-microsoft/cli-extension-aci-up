@@ -3,13 +3,15 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+import json
+import subprocess as sb
 from knack.util import CLIError
 from knack.log import get_logger
 from knack.prompting import prompt
 
 from azext_aci.common.git import get_repository_url_from_local_repo, uri_parse
 from azext_aci.resources.docker_template import get_docker_file, choose_supported_language
-from azext_aci.common.git_api_helper import Files
+from azext_aci.common.git_api_helper import Files, get_work_flow_check_runID, get_check_run_status_and_conclusion
 
 logger = get_logger(__name__)
 
@@ -27,6 +29,7 @@ def aci_up(code=None):
     :type code: str
     """
     #TODO: Implement Az Aci Up
+    #TODO: Secrets Generation and Port Selection Options too!
     if code is None:
         code = get_repository_url_from_local_repo()
         logger.debug('GitHub Remote URL Detected from Local Repository is: {}'.format(code))
@@ -52,8 +55,13 @@ def aci_up(code=None):
         logger.debug("Checkin file path: {}".format(file_name.path))
         logger.debug("Checkin file content: {}".format(file_name.content))
     workflow_commit_sha = push_files_github(files, repo_name, 'master', True, message="Setting up Container Deployment Workflow.")
-    print(workflow_commit_sha)
+    print('')
     print('GitHub workflow is setup for continuous deployment.')
+    check_run_id = get_work_flow_check_runID(repo_name, workflow_commit_sha)
+    workflow_url = 'https://github.com/{repo_id}/runs/{checkID}'.format(repo_id=repo_name, checkID=check_run_id)
+    print('For more details, check {}'.format(workflow_url))
+    #TODO: Add the option of Do Not Wait. Polling Workflow Status for now!
+    poll_workflow_status(repo_name, check_run_id)
     
 
 def _get_repo_name_from_repo_url(repository_url):
@@ -77,14 +85,60 @@ def get_yaml_template_for_repo(languages, acr_details, repo_name):
         logger.warning('%s repository detected.', language)
         files_to_return = []
         from azext_aci.resources.resourcefiles import DEPLOY_TO_ACI_TEMPLATE
-
+        if acr_details['adminUserEnabled']:
+            credentials = sb.check_output('az acr credential show -n {}'.format(acr_details['name']), shell=True)
+        else:
+            logger.warning('The Azure Container Registry {} specified doesn\'t have Admin Account Enabled. Turning it on')
+            sb.check_output('az acr update -n {} --admin-enabled true'.format(acr_details['name']), shell=True)
+            credentials = sb.check_output('az acr credential show -n {}'.format(acr_details['name']), shell=True)
+        credentials = json.loads(credentials)
+        ACR_USERNAME = credentials['username']
+        ACR_PASSWORD = credentials['passwords'][0]['value']
         files_to_return.append(Files(path='.github/workflows/main.yml', content=DEPLOY_TO_ACI_TEMPLATE
                                                                             .replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT)
+                                                                            .replace(RESOURCE_GROUP_PLACE_HOLDER, acr_details['resourceGroup'])
+                                                                            .replace(CONTAINER_REGISTRY_USERNAME, ACR_USERNAME)
+                                                                            .replace(CONTAINER_REGISTRY_PASSWORD, ACR_PASSWORD)
                                                                             .replace(ACR_PLACEHOLDER, acr_details['name'])))
         return files_to_return
     else:
         logger.debug('Languages detected: {}'.format(languages))
         raise CLIError('The languages in this repository are not yet supported from the up command.')
+
+def poll_workflow_status(repo_name, check_run_id):
+    import colorama
+    import humanfriendly
+    import time
+    check_run_status = None
+    check_run_status, check_run_conclusion = get_check_run_status_and_conclusion(repo_name, check_run_id)
+    if check_run_status == 'queued':
+        colorama.init()
+        with humanfriendly.Spinner(label='Workflow is in queue') as spinner:
+            while True:
+                spinner.step()
+                time.sleep(0.5)
+                check_run_status, check_run_conclusion = get_check_run_status_and_conclusion(repo_name, check_run_id)
+                if check_run_status == 'in_progress' or check_run_status == 'completed':
+                    break
+        colorama.deinit()
+    if check_run_status == 'in_progress':
+        colorama.init()
+        with humanfriendly.Spinner(label="Worflow is in Progress") as spinner:
+            while True:
+                spinner.step()
+                time.sleep(0.5)
+                check_run_status, check_run_conclusion = get_check_run_status_and_conclusion(repo_name, check_run_id)
+                if check_run_status == 'completed':
+                    break
+        colorama.deinit()
+    print('GitHub Workflow Completed.')
+    print('')
+    if check_run_conclusion == 'success':
+        print('Workflow Succeded.')
+        #TODO: Better ways to return app URL? Resource Group are not passed here so cant use az command for now
+        print('Here is the URL for your deployed App: {}'.format('http://'+APP_NAME_DEFAULT+'centralus.azurecontainer.io:8080/'))
+    else:
+        raise CLIError('Workflow status: {}'.format(check_run_conclusion))
 
 def update_aci(cmd, instance, tags=None):
     with cmd.update_context(instance) as c:
@@ -93,4 +147,9 @@ def update_aci(cmd, instance, tags=None):
 
 ACR_PLACEHOLDER = 'container_registry_name_place_holder'
 APP_NAME_PLACEHOLDER = 'app_name_place_holder'
-APP_NAME_DEFAULT = 'TestContainerApp'
+RESOURCE_GROUP_PLACE_HOLDER = 'resource_group_place_holder'
+CONTAINER_REGISTRY_USERNAME = 'container_registry_username'
+CONTAINER_REGISTRY_PASSWORD = 'container_registry_password'
+APP_NAME_DEFAULT = 'test-app'
+ACR_USERNAME = ''
+ACR_PASSWORD = ''

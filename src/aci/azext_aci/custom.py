@@ -123,7 +123,7 @@ def poll_workflow_status(repo_name, check_run_id):
         colorama.deinit()
     if check_run_status == 'in_progress':
         colorama.init()
-        with humanfriendly.Spinner(label="Worflow is in Progress") as spinner:
+        with humanfriendly.Spinner(label="Workflow is in Progress") as spinner:
             while True:
                 spinner.step()
                 time.sleep(0.5)
@@ -135,8 +135,8 @@ def poll_workflow_status(repo_name, check_run_id):
     print('')
     if check_run_conclusion == 'success':
         print('Workflow Succeded.')
-        #TODO: Better ways to return app URL? Resource Group are not passed here so cant use az command for now
-        print('Here is the URL for your deployed App: {}'.format('http://'+APP_NAME_DEFAULT+'centralus.azurecontainer.io:8080/'))
+        #TODO: Better ways to return app URL? Resource Group are not passed here so cant use az container show command for now
+        print('Here is the URL for your deployed App: {}'.format('http://'+APP_NAME_DEFAULT+'.centralus.azurecontainer.io:8080/'))
     else:
         raise CLIError('Workflow status: {}'.format(check_run_conclusion))
 

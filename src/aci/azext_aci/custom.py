@@ -48,7 +48,6 @@ def aci_up(code=None):
     from azext_aci.common.azure_cli_resources import get_default_subscription_info, get_acr_details
     acr_details = get_acr_details()
     logger.debug(acr_details)
-    #TODO: Get the Yaml Workflow file
     files = get_yaml_template_for_repo(languages, acr_details, repo_name)
     logger.warning('Setting up your workflow. This will require 1 or more files to be checked in to the repository.')
     for file_name in files:
@@ -61,7 +60,7 @@ def aci_up(code=None):
     workflow_url = 'https://github.com/{repo_id}/runs/{checkID}'.format(repo_id=repo_name, checkID=check_run_id)
     print('For more details, check {}'.format(workflow_url))
     #TODO: Add the option of Do Not Wait. Polling Workflow Status for now!
-    poll_workflow_status(repo_name, check_run_id)
+    poll_workflow_status(repo_name, check_run_id, acr_details)
     
 
 def _get_repo_name_from_repo_url(repository_url):
@@ -105,7 +104,8 @@ def get_yaml_template_for_repo(languages, acr_details, repo_name):
         logger.debug('Languages detected: {}'.format(languages))
         raise CLIError('The languages in this repository are not yet supported from the up command.')
 
-def poll_workflow_status(repo_name, check_run_id):
+def poll_workflow_status(repo_name, check_run_id, acr_details):
+    #TODO: ACR Details passed to get the Resource Group to get the FQDN of the Container. Any other ways?
     import colorama
     import humanfriendly
     import time
@@ -135,8 +135,11 @@ def poll_workflow_status(repo_name, check_run_id):
     print('')
     if check_run_conclusion == 'success':
         print('Workflow Succeded.')
-        #TODO: Better ways to return app URL? Resource Group are not passed here so cant use az container show command for now
-        print('Here is the URL for your deployed App: {}'.format('http://'+APP_NAME_DEFAULT+'.centralus.azurecontainer.io:8080/'))
+        resource_group = acr_details['resourceGroup']
+        url_find_command = 'az container show --name {app_name} --resource-group {resource_group_name} --query ipAddress.fqdn'.format(app_name=APP_NAME_DEFAULT, resource_group_name=resource_group)
+        url_result = sb.check_output(url_find_command, shell=True)
+        app_url = "http://"+url_result.decode().strip()+":8080/"
+        print('You can see your deployed app at: {}'.format(app_url))
     else:
         raise CLIError('Workflow status: {}'.format(check_run_conclusion))
 

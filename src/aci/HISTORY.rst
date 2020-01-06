@@ -8,3 +8,10 @@ Release History
 * Initial release. Set's up the GitHub Actions Workflow. User is expected to set the ```AZURE_CREDENTIALS``` secrets in their repository. 
 * Uses azure/CLI@v1 GitHub Action to deploy to Azure Container Instances.
 * Option to create your own ACR doesn't work.
+
+0.0.2
+++++++
+* ACR Creation Option works now. Smarter Fetching of App's URL added.
+* User is expected to set the ```AZURE_CREDENTIALS``` secrets in their repository. 
+* Uses azure/CLI@v1 GitHub Action to deploy to Azure Container Instances.
+

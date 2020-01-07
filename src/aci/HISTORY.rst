@@ -12,6 +12,6 @@ Release History
 0.0.2
 ++++++
 * ACR Creation Option works now. Smarter Fetching of App's URL added.
-* User is expected to set the ```AZURE_CREDENTIALS``` secrets in their repository. 
+* Option to generate (or not generate) secrets for ```AZURE_CREDENTIALS``` and ```REGISTRY_USERNAME``` & ```REGISTRY_PASSWORD```
 * Uses azure/CLI@v1 GitHub Action to deploy to Azure Container Instances.
 

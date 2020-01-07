@@ -11,6 +11,7 @@ from knack.prompting import prompt
 
 from azext_aci.common.git import get_repository_url_from_local_repo, uri_parse
 from azext_aci.common.git_api_helper import Files, get_work_flow_check_runID, get_check_run_status_and_conclusion, get_github_pat_token
+from azext_aci.common.github_azure_secrets import get_azure_credentials
 from azext_aci.common.const import ( APP_NAME_DEFAULT, APP_NAME_PLACEHOLDER, ACR_PLACEHOLDER, RG_PLACEHOLDER, PORT_NUMBER_DEFAULT, 
                                      RELEASE_PLACEHOLDER, RELEASE_NAME, CONTAINER_REGISTRY_PASSWORD, CONTAINER_REGISTRY_USERNAME )
 from azext_aci.docker_template import get_docker_templates, choose_supported_language
@@ -71,11 +72,15 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
     if 'Dockerfile' not in languages.keys():
         docker_files = get_docker_templates(language, port)
         if docker_files:
-            push_files_github(docker_files, repo_name, 'master', True, message='Checking in Dockerfile for Deployment Workflow')
+            push_files_github(docker_files, repo_name, 'master', True, message='Checking in Dockerfile for Container Deployment Workflow')
     else:
         logger.warning('Using the Dockerfile found in the repository {}'.format(repo_name))
 
-    files = get_yaml_template_for_repo(languages, acr_details, repo_name)
+    if not skip_secrets_generation:
+        get_azure_credentials()
+    
+    print('')
+    files = get_yaml_template_for_repo(language, acr_details, repo_name)
     logger.warning('Setting up your workflow. This will require 1 or more files to be checked in to the repository.')
     for file_name in files:
         logger.debug("Checkin file path: {}".format(file_name.path))
@@ -105,32 +110,17 @@ def _get_repo_name_from_repo_url(repository_url):
     #TODO: For Azure Repos
     raise CLIError('Could not parse the Repository URL.')
 
-def get_yaml_template_for_repo(languages, acr_details, repo_name):
-    #TODO: ACR Credentials are fetched here.
-    language = choose_supported_language(languages)
-    if language:
-        logger.warning('%s repository detected.', language)
-        files_to_return = []
-        from azext_aci.resources.resourcefiles import DEPLOY_TO_ACI_TEMPLATE
-        if acr_details['adminUserEnabled']:
-            credentials = sb.check_output('az acr credential show -n {}'.format(acr_details['name']), shell=True)
-        else:
-            logger.warning('The Azure Container Registry {} specified doesn\'t have Admin Account Enabled. Turning it on')
-            sb.check_output('az acr update -n {} --admin-enabled true'.format(acr_details['name']), shell=True)
-            credentials = sb.check_output('az acr credential show -n {}'.format(acr_details['name']), shell=True)
-        credentials = json.loads(credentials)
-        ACR_USERNAME = credentials['username']
-        ACR_PASSWORD = credentials['passwords'][0]['value']
-        files_to_return.append(Files(path='.github/workflows/main.yml', content=DEPLOY_TO_ACI_TEMPLATE
-                                                                            .replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT)
-                                                                            .replace(RESOURCE_GROUP_PLACE_HOLDER, acr_details['resourceGroup'])
-                                                                            .replace(CONTAINER_REGISTRY_USERNAME, ACR_USERNAME)
-                                                                            .replace(CONTAINER_REGISTRY_PASSWORD, ACR_PASSWORD)
-                                                                            .replace(ACR_PLACEHOLDER, acr_details['name'])))
-        return files_to_return
-    else:
-        logger.debug('Languages detected: {}'.format(languages))
-        raise CLIError('The languages in this repository are not yet supported from the up command.')
+def get_yaml_template_for_repo(language, acr_details, repo_name):
+    #TODO: ACR Credentials were fetched here. Now done using SP
+    files_to_return = []
+    from azext_aci.resources.resourcefiles import DEPLOY_TO_ACI_TEMPLATE
+    files_to_return.append(Files(path='.github/workflows/main.yml',
+        content=DEPLOY_TO_ACI_TEMPLATE
+            .replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT)
+            .replace(ACR_PLACEHOLDER, acr_details['name'])
+            .replace(RELEASE_PLACEHOLDER, RELEASE_NAME)
+            .replace(RG_PLACEHOLDER, acr_details['resourceGroup'])))
+    return files_to_return
 
 def poll_workflow_status(repo_name, check_run_id, acr_details):
     #TODO: ACR Details passed to get the Resource Group to get the FQDN of the Container. Any other ways?

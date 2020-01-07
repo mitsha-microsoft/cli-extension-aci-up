@@ -10,8 +10,10 @@ from knack.log import get_logger
 from knack.prompting import prompt
 
 from azext_aci.common.git import get_repository_url_from_local_repo, uri_parse
-from azext_aci.resources.docker_template import get_docker_file, choose_supported_language
 from azext_aci.common.git_api_helper import Files, get_work_flow_check_runID, get_check_run_status_and_conclusion, get_github_pat_token
+from azext_aci.common.const import ( APP_NAME_DEFAULT, APP_NAME_PLACEHOLDER, ACR_PLACEHOLDER, RG_PLACEHOLDER, PORT_NUMBER_DEFAULT, 
+                                     RELEASE_PLACEHOLDER, RELEASE_NAME, CONTAINER_REGISTRY_PASSWORD, CONTAINER_REGISTRY_USERNAME )
+from azext_aci.docker_template import get_docker_templates, choose_supported_language
 
 logger = get_logger(__name__)
 
@@ -51,13 +53,28 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
     languages = get_languages_for_repo(repo_name)
     if not languages:
         raise CLIError('Language Detection has Failed in this Repository.')
-    elif 'Dockerfile' not in languages.keys():
-        docker_file = get_docker_file(languages)
-        if docker_file:
-            push_files_github(docker_file, repo_name, 'master', True, message='Checking in Dockerfile for Deployment Workflow')
-    from azext_aci.common.azure_cli_resources import get_default_subscription_info, get_acr_details
+
+    language = choose_supported_language(languages)
+    if language:
+        logger.warning('%s repository detected.', language)
+    else:
+        logger.debug('Languages detected: {}'.format(languages))
+        raise CLIError('The languages in this repository are not yet supported from up command.')
+
+    from azext_aci.common.azure_cli_resources import (get_default_subscription_info, get_acr_details)
     acr_details = get_acr_details()
     logger.debug(acr_details)
+    print('')
+
+    if port is None:
+        port = PORT_NUMBER_DEFAULT
+    if 'Dockerfile' not in languages.keys():
+        docker_files = get_docker_templates(language, port)
+        if docker_files:
+            push_files_github(docker_files, repo_name, 'master', True, message='Checking in Dockerfile for Deployment Workflow')
+    else:
+        logger.warning('Using the Dockerfile found in the repository {}'.format(repo_name))
+
     files = get_yaml_template_for_repo(languages, acr_details, repo_name)
     logger.warning('Setting up your workflow. This will require 1 or more files to be checked in to the repository.')
     for file_name in files:
@@ -89,6 +106,7 @@ def _get_repo_name_from_repo_url(repository_url):
     raise CLIError('Could not parse the Repository URL.')
 
 def get_yaml_template_for_repo(languages, acr_details, repo_name):
+    #TODO: ACR Credentials are fetched here.
     language = choose_supported_language(languages)
     if language:
         logger.warning('%s repository detected.', language)
@@ -158,11 +176,6 @@ def update_aci(cmd, instance, tags=None):
         c.set_param('tags', tags)
     return instance
 
-ACR_PLACEHOLDER = 'container_registry_name_place_holder'
-APP_NAME_PLACEHOLDER = 'app_name_place_holder'
-RESOURCE_GROUP_PLACE_HOLDER = 'resource_group_place_holder'
-CONTAINER_REGISTRY_USERNAME = 'container_registry_username'
-CONTAINER_REGISTRY_PASSWORD = 'container_registry_password'
 APP_NAME_DEFAULT = 'test-app'
 ACR_USERNAME = ''
 ACR_PASSWORD = ''

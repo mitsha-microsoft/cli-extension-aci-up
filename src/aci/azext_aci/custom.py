@@ -12,7 +12,7 @@ from azext_aci.common.git import get_repository_url_from_local_repo, uri_parse
 from azext_aci.common.git_api_helper import Files, get_work_flow_check_runID, get_check_run_status_and_conclusion, get_github_pat_token
 from azext_aci.common.github_azure_secrets import get_azure_credentials
 from azext_aci.common.const import ( APP_NAME_DEFAULT, APP_NAME_PLACEHOLDER, ACR_PLACEHOLDER, RG_PLACEHOLDER, PORT_NUMBER_DEFAULT, 
-                                     CONTAINER_REGISTRY_PASSWORD, CONTAINER_REGISTRY_USERNAME )
+                                     PORT_NUMBER_PLACEHOLDER, CONTAINER_REGISTRY_PASSWORD, CONTAINER_REGISTRY_USERNAME )
 from azext_aci.docker_template import get_docker_templates, choose_supported_language
 
 logger = get_logger(__name__)
@@ -79,7 +79,7 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
         get_azure_credentials()
     
     print('')
-    files = get_yaml_template_for_repo(language, acr_details, repo_name)
+    files = get_yaml_template_for_repo(language, acr_details, repo_name, port)
     for file_name in files:
         logger.debug("Checkin file path: {}".format(file_name.path))
         logger.debug("Checkin file content: {}".format(file_name.content))
@@ -112,15 +112,17 @@ def _get_repo_name_from_repo_url(repository_url):
         return stripped_path
     raise CLIError('Could not parse the Repository URL.')
 
-def get_yaml_template_for_repo(language, acr_details, repo_name):
+def get_yaml_template_for_repo(language, acr_details, repo_name, port):
     #TODO: ACR Credentials were fetched here. Now done using SP
+    #TODO: Port Number required for Container Deployment. Hence passed to this method
     files_to_return = []
     from azext_aci.resources.resourcefiles import DEPLOY_TO_ACI_TEMPLATE
     files_to_return.append(Files(path='.github/workflows/main.yml',
         content=DEPLOY_TO_ACI_TEMPLATE
             .replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT)
             .replace(ACR_PLACEHOLDER, acr_details['name'])
-            .replace(RG_PLACEHOLDER, acr_details['resourceGroup'])))
+            .replace(RG_PLACEHOLDER, acr_details['resourceGroup'])
+            .replace(PORT_NUMBER_PLACEHOLDER, port)))
     return files_to_return
 
 def poll_workflow_status(repo_name, check_run_id):

@@ -10,3 +10,9 @@ The Azure ACI Extension for Azure CLI adds ```az aci up``` Functionality to the 
 
 # Usage
 ```$ az aci up --code [link-to-repository]```
+
+# Parameters
+```--code```                    : Link to Code Repository (Empty if Current Working Directory Contains the Code).
+```--do-not-wait```             : Do not wait for workflow completion. (Default False).
+```--port```                   : Port on which your application runs (Default is 8080).
+```--skip-secrets-generation``` : Set to True if have stored AZURE_CREDENTIALS & Registry Details Secrets in your Repository (Default False).

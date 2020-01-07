@@ -13,7 +13,7 @@ from azext_aci.common.git import get_repository_url_from_local_repo, uri_parse
 from azext_aci.common.git_api_helper import Files, get_work_flow_check_runID, get_check_run_status_and_conclusion, get_github_pat_token
 from azext_aci.common.github_azure_secrets import get_azure_credentials
 from azext_aci.common.const import ( APP_NAME_DEFAULT, APP_NAME_PLACEHOLDER, ACR_PLACEHOLDER, RG_PLACEHOLDER, PORT_NUMBER_DEFAULT, 
-                                     RELEASE_PLACEHOLDER, RELEASE_NAME, CONTAINER_REGISTRY_PASSWORD, CONTAINER_REGISTRY_USERNAME )
+                                     CONTAINER_REGISTRY_PASSWORD, CONTAINER_REGISTRY_USERNAME )
 from azext_aci.docker_template import get_docker_templates, choose_supported_language
 
 logger = get_logger(__name__)
@@ -118,7 +118,6 @@ def get_yaml_template_for_repo(language, acr_details, repo_name):
         content=DEPLOY_TO_ACI_TEMPLATE
             .replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT)
             .replace(ACR_PLACEHOLDER, acr_details['name'])
-            .replace(RELEASE_PLACEHOLDER, RELEASE_NAME)
             .replace(RG_PLACEHOLDER, acr_details['resourceGroup'])))
     return files_to_return
 

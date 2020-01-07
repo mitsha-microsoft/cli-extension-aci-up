@@ -8,6 +8,3 @@ CONTAINER_REGISTRY_PASSWORD = 'container_registry_password'
 
 PORT_NUMBER_DEFAULT = '8080'
 APP_NAME_DEFAULT = 'aciappdemo'
-RELEASE_NAME = 'aciupdemo'
-
-RELEASE_PLACEHOLDER = 'release_name_place_holder'

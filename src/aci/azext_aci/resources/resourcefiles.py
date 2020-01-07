@@ -14,8 +14,8 @@ jobs:
           uses: Azure/docker-login@v1
           with:
               login-server: container_registry_name_place_holder.azurecr.io
-              username: container_registry_username
-              password: container_registry_password
+              username: ${{ SECRETS.REGISTRY_USERNAME }}
+              password: ${{ SECRETS.REGISTRY_PASSWORD }}
 
         - run: |
             docker build . -t container_registry_name_place_holder.azurecr.io/app_name_place_holder:${{ github.sha }}
@@ -31,5 +31,5 @@ jobs:
           with: 
             azcliversion: 2.0.72
             inlineScript: |
-              az container create --resource-group resource_group_place_holder --name app_name_place_holder --image container_registry_name_place_holder.azurecr.io/app_name_place_holder:${{ github.sha }} --ports 80 8080 --dns-name-label app_name_place_holder --registry-username container_registry_username --registry-password container_registry_password""" 
+              az container create --resource-group resource_name_place_holder --name app_name_place_holder --image container_registry_name_place_holder.azurecr.io/app_name_place_holder:${{ github.sha }} --ports 80 8080 --dns-name-label app_name_place_holder --registry-username ${{ SECRETS.REGISRY_USERNAME }} --registry-password $${{ SECRETS.REGISTRY_PASSWORD }}""" 
 

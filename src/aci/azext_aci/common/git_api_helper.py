@@ -19,7 +19,7 @@ def get_languages_for_repo(repo_name):
     """
     API Documentation - https://developer.github.com/v3/repos/#list-languages
     """
-    token = get_github_pat_token()
+    token = get_github_pat_token(repo_name)
     get_languages_url = 'https://api.github.com/repos/{repo_id}/languages'.format(repo_id=repo_name)
     get_response = requests.get(url=get_languages_url, auth=('', token))
     if not get_response.status_code == _HTTP_SUCCESS_STATUS:
@@ -27,10 +27,10 @@ def get_languages_for_repo(repo_name):
     import json
     return json.loads(get_response.text)
 
-def get_github_pat_token():
+def get_github_pat_token(token_prefix, display_warning=False):
     from azext_aci.common.github_credential_manager import GithubCredentialManager
     github_manager = GithubCredentialManager()
-    return github_manager.get_token()
+    return github_manager.get_token(token_prefix=token_prefix, display_warning=display_warning)
 
 def push_files_github(files, repo_name, branch, commit_to_branch, message="Set up CI with Azure Pipelines"):
     if commit_to_branch:
@@ -63,7 +63,7 @@ def commit_file_to_github_branch(path_to_commit, content, repo_name, branch, mes
             "branch": branch,
             "content": encoded_content
         }
-        token = get_github_pat_token()
+        token = get_github_pat_token(repo_name)
         logger.warning('Checking in file %s in the GitHub repository %s', path_to_commit, repo_name)
         response = requests.put(url_for_github_file_api, auth=('', token), json=request_body, headers=headers)
         logger.debug(response.text)
@@ -83,7 +83,7 @@ def get_check_runs_for_commit(repo_name, commit_sha):
     """
     API Documentation - https://developer.github.com/v3/checks/runs/#list-check-runs-for-a-specific-ref
     """
-    token = get_github_pat_token()
+    token = get_github_pat_token(repo_name)
     headers = get_application_json_header_for_preview()
     #TODO: Why a Sleep Here?
     time.sleep(1)
@@ -115,7 +115,7 @@ def get_check_run_status_and_conclusion(repo_name, check_run_id):
     """
     API Documentation - https://developer.github.com/v3/checks/runs/#get-a-single-check-run
     """
-    token = get_github_pat_token()
+    token = get_github_pat_token(repo_name)
     headers = get_application_json_header_for_preview()
     get_check_run_url = 'https://api.github.com/repos/{repo_id}/check-runs/{checkID}'.format(repo_id=repo_name, checkID=check_run_id)
     get_response = requests.get(url=get_check_run_url, auth=('', token), headers=headers)

@@ -26,18 +26,3 @@ helps['aci list'] = """
     type: command
     short-summary: List Acis.
 """
-
-# helps['aci delete'] = """
-#     type: command
-#     short-summary: Delete a Aci.
-# """
-
-# helps['aci show'] = """
-#     type: command
-#     short-summary: Show details of a Aci.
-# """
-
-# helps['aci update'] = """
-#     type: command
-#     short-summary: Update a Aci.
-# """

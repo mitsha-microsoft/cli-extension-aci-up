@@ -11,7 +11,7 @@ from knack.prompting import prompt
 
 from azext_aci.common.git import get_repository_url_from_local_repo, uri_parse
 from azext_aci.resources.docker_template import get_docker_file, choose_supported_language
-from azext_aci.common.git_api_helper import Files, get_work_flow_check_runID, get_check_run_status_and_conclusion
+from azext_aci.common.git_api_helper import Files, get_work_flow_check_runID, get_check_run_status_and_conclusion, get_github_pat_token
 
 logger = get_logger(__name__)
 
@@ -22,22 +22,32 @@ def create_aci(cmd, resource_group_name, aci_name, location=None, tags=None):
 def list_aci(cmd, resource_group_name=None):
     raise CLIError('TODO: Implement `aci list`')
 
-def aci_up(code=None):
+def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=False):
     """
     Build and Deploy to Azure Container Instances using GitHub Actions
     :param code: URL of the Repository where the code exists
     :type code: str
+    :param port: Port on which your application runs. Default is 8080
+    :type port: int
+    :param skip_secrets_generation: Flag to skip generating Azure Credentials
+    :type skip_secrets_generation: bool
+    :param do_not_wait: Do not wait for workflow completion
+    :type do_not_wait: bool
     """
-    #TODO: Implement Az Aci Up
     #TODO: Secrets Generation and Port Selection Options too!
     if code is None:
         code = get_repository_url_from_local_repo()
         logger.debug('GitHub Remote URL Detected from Local Repository is: {}'.format(code))
     if not code:
+        code = prompt('GitHub Repository URL (e.g. https://github.com/contoso/webapp/): ')
+    if not code:
         raise CLIError('The following arguments are required: --code.')
     repo_name = _get_repo_name_from_repo_url(code)
     
     from azext_aci.common.git_api_helper import get_languages_for_repo, push_files_github
+    get_github_pat_token(repo_name, display_warning=True)
+    logger.warning('Setting up your workflow.')
+
     languages = get_languages_for_repo(repo_name)
     if not languages:
         raise CLIError('Language Detection has Failed in this Repository.')

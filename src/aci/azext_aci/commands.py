@@ -19,10 +19,7 @@ def load_command_table(self, _):
     with self.command_group('aci') as g:
         g.custom_command('create', 'create_aci')
         g.custom_command('up', 'aci_up')
-        # g.command('delete', 'delete')
         g.custom_command('list', 'list_aci')
-        # g.show_command('show', 'get')
-        # g.generic_update_command('update', setter_name='update', custom_func_name='update_aci')
 
 
     with self.command_group('aci', is_preview=True):

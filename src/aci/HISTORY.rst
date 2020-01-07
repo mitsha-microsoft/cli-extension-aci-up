@@ -13,5 +13,7 @@ Release History
 ++++++
 * ACR Creation Option works now. Smarter Fetching of App's URL added.
 * Option to generate (or not generate) secrets for ```AZURE_CREDENTIALS``` and ```REGISTRY_USERNAME``` & ```REGISTRY_PASSWORD```
+* Option to have a Custom Port for the App Added
+* Option to not wait for Workflow Completion Added
 * Uses azure/CLI@v1 GitHub Action to deploy to Azure Container Instances.
 

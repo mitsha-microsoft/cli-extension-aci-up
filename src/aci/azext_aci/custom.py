@@ -4,7 +4,6 @@
 # --------------------------------------------------------------------------------------------
 
 import json
-import subprocess as sb
 from knack.util import CLIError
 from knack.log import get_logger
 from knack.prompting import prompt
@@ -81,18 +80,22 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
     
     print('')
     files = get_yaml_template_for_repo(language, acr_details, repo_name)
-    logger.warning('Setting up your workflow. This will require 1 or more files to be checked in to the repository.')
     for file_name in files:
         logger.debug("Checkin file path: {}".format(file_name.path))
         logger.debug("Checkin file content: {}".format(file_name.content))
+
     workflow_commit_sha = push_files_github(files, repo_name, 'master', True, message="Setting up Container Deployment Workflow.")
-    print('')
-    print('GitHub workflow is setup for continuous deployment.')
+    print('Creating workflow...')
     check_run_id = get_work_flow_check_runID(repo_name, workflow_commit_sha)
     workflow_url = 'https://github.com/{repo_id}/runs/{checkID}'.format(repo_id=repo_name, checkID=check_run_id)
-    print('For more details, check {}'.format(workflow_url))
-    #TODO: Add the option of Do Not Wait. Polling Workflow Status for now!
-    poll_workflow_status(repo_name, check_run_id, acr_details)
+    print('GitHub Action workflow has been created - {}'.format(workflow_url))
+
+    if not do_not_wait:
+        poll_workflow_status(repo_name, check_run_id)
+        app_url = get_app_url(acr_details)
+        app_url_with_port = app_url+":"+port+"/"
+        print('Your app is deployed at: ',app_url_with_port)
+    return
     
 
 def _get_repo_name_from_repo_url(repository_url):
@@ -107,7 +110,6 @@ def _get_repo_name_from_repo_url(repository_url):
         if stripped_path.endswith('.git'):
             stripped_path = stripped_path[:-4]
         return stripped_path
-    #TODO: For Azure Repos
     raise CLIError('Could not parse the Repository URL.')
 
 def get_yaml_template_for_repo(language, acr_details, repo_name):
@@ -121,8 +123,7 @@ def get_yaml_template_for_repo(language, acr_details, repo_name):
             .replace(RG_PLACEHOLDER, acr_details['resourceGroup'])))
     return files_to_return
 
-def poll_workflow_status(repo_name, check_run_id, acr_details):
-    #TODO: ACR Details passed to get the Resource Group to get the FQDN of the Container. Any other ways?
+def poll_workflow_status(repo_name, check_run_id):
     import colorama
     import humanfriendly
     import time
@@ -152,11 +153,6 @@ def poll_workflow_status(repo_name, check_run_id, acr_details):
     print('')
     if check_run_conclusion == 'success':
         print('Workflow Succeded.')
-        resource_group = acr_details['resourceGroup']
-        url_find_command = 'az container show --name {app_name} --resource-group {resource_group_name} --query ipAddress.fqdn'.format(app_name=APP_NAME_DEFAULT, resource_group_name=resource_group)
-        url_result = sb.check_output(url_find_command, shell=True)
-        app_url = "http://"+url_result.decode().strip()+":8080/"
-        print('You can see your deployed app at: {}'.format(app_url))
     else:
         raise CLIError('Workflow status: {}'.format(check_run_conclusion))
 
@@ -165,6 +161,10 @@ def update_aci(cmd, instance, tags=None):
         c.set_param('tags', tags)
     return instance
 
-APP_NAME_DEFAULT = 'test-app'
-ACR_USERNAME = ''
-ACR_PASSWORD = ''
+def get_app_url(acr_details):
+    import subprocess as sb
+    resource_group = acr_details['resourceGroup']
+    url_find_command = 'az container show --name {app_name} --resource-group {resource_group_name} --query ipAddress.fqdn'.format(app_name=APP_NAME_DEFAULT, resource_group_name=resource_group)
+    url_result = sb.check_output(url_find_command, shell=True)
+    app_url = "http://"+url_result.decode().strip()
+    return app_url

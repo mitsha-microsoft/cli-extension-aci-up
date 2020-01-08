@@ -36,14 +36,14 @@ steps:
      artifactName: 'aci-up-cli-extension'
      publishLocation: Container
   
-  - task: GitHubRelease@0
-    inputs:
-      gitHubConnection: 'mitsha-microsoft-2'
-      repositoryName: '$(Build.Repository.Name)'
-      action: create
-      target: '$(Build.SourceVersion)'
-      tagSource: auto
-      tag: $(tagName)
-      assets: $(Build.ArtifactStagingDirectory)/src/aci/dist/*
-      assetUploadMode: replace
-      isPreRelease: true
+  # - task: GitHubRelease@0
+  #   inputs:
+  #     gitHubConnection: 'mitsha-microsoft-2'
+  #     repositoryName: '$(Build.Repository.Name)'
+  #     action: create
+  #     target: '$(Build.SourceVersion)'
+  #     tagSource: auto
+  #     tag: $(tagName)
+  #     assets: $(Build.ArtifactStagingDirectory)/src/aci/dist/*
+  #     assetUploadMode: replace
+  #     isPreRelease: true

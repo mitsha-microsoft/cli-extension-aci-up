@@ -74,6 +74,7 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
             push_files_github(docker_files, repo_name, 'master', True, message='Checking in Dockerfile for Container Deployment Workflow')
     else:
         logger.warning('Using the Dockerfile found in the repository {}'.format(repo_name))
+        #TODO: Need to fetch the new port from the Dockerfile? 
 
     if not skip_secrets_generation:
         get_azure_credentials()
@@ -117,6 +118,7 @@ def get_yaml_template_for_repo(language, acr_details, repo_name, port):
     #TODO: Port Number required for Container Deployment. Hence passed to this method
     files_to_return = []
     from azext_aci.resources.resourcefiles import DEPLOY_TO_ACI_TEMPLATE
+    APP_NAME_DEFAULT = repo_name.split("/").join('-')
     files_to_return.append(Files(path='.github/workflows/main.yml',
         content=DEPLOY_TO_ACI_TEMPLATE
             .replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT)
@@ -168,5 +170,6 @@ def get_app_url(acr_details):
     resource_group = acr_details['resourceGroup']
     url_find_command = 'az container show --name {app_name} --resource-group {resource_group_name} --query ipAddress.fqdn'.format(app_name=APP_NAME_DEFAULT, resource_group_name=resource_group)
     url_result = sb.check_output(url_find_command, shell=True)
-    app_url = "http://"+url_result.decode().strip()
+    url_result = url_result.decode().strip().lstrip("\"").rstrip("\"")
+    app_url = "http://"+url_result
     return app_url

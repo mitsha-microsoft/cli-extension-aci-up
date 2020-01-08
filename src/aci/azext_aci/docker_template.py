@@ -7,7 +7,7 @@ from azext_aci.common.const import (APP_NAME_DEFAULT, APP_NAME_PLACEHOLDER, PORT
 
 logger = get_logger(__name__)
 PACKS_ROOT_STRING = os.path.sep+'resources'+os.path.sep+'packs'+os.path.sep
-FILE_ABSOLUTE_PATH = abspath(dirname(dirname(abspath(__file__))))
+FILE_ABSOLUTE_PATH = abspath(dirname(abspath(__file__)))
 
 def get_docker_templates(language, port):
     files = []
@@ -33,7 +33,7 @@ def get_docker_templates(language, port):
 
 
 def replace_port(file_content, port):
-    content = file_content.repace(PORT_NUMBER_PLACEHOLDER, port)
+    content = file_content.replace(PORT_NUMBER_PLACEHOLDER, port)
     return content
 
 def get_file_content(path):

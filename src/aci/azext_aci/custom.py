@@ -24,7 +24,7 @@ def create_aci(cmd, resource_group_name, aci_name, location=None, tags=None):
 def list_aci(cmd, resource_group_name=None):
     raise CLIError('TODO: Implement `aci list`')
 
-def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=False):
+def aci_up(code=None, acr=None, port=None, skip_secrets_generation=False, do_not_wait=False):
     """
     Build and Deploy to Azure Container Instances using GitHub Actions
     :param code: URL of the Repository where the code exists
@@ -61,7 +61,7 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
         raise CLIError('The languages in this repository are not yet supported from up command.')
 
     from azext_aci.common.azure_cli_resources import (get_default_subscription_info, get_acr_details)
-    acr_details = get_acr_details()
+    acr_details = get_acr_details(acr)
     logger.debug(acr_details)
     print('')
 

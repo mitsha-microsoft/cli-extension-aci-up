@@ -12,6 +12,7 @@ Release History
 0.0.2
 ++++++
 * ACR Creation Option works now. Smarter Fetching of App's URL added.
+* User can specify their existing ACR using the --acr option.
 * Option to generate (or not generate) secrets for ```AZURE_CREDENTIALS``` and ```REGISTRY_USERNAME``` & ```REGISTRY_PASSWORD```
 * Option to have a Custom Port for the App Added
 * Option to not wait for Workflow Completion Added

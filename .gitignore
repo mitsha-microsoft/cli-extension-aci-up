@@ -1,3 +1,10 @@
 *.pyc
-.vscode/
 __pycache__/
+.pytest_cache/
+.vscode/*
+src/aci/azext_aci/__pycache__
+src/aci/azext_aci/*/__pycache__
+src/aci/azext_aci/resources/__pycache__
+src/aci/azext_aci/tests/__pycache__
+src/aci/build/
+src/aci/dist/

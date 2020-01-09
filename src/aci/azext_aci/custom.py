@@ -36,7 +36,6 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
     :param do_not_wait: Do not wait for workflow completion
     :type do_not_wait: bool
     """
-    #TODO: Secrets Generation and Port Selection Options too!
     if code is None:
         code = get_repository_url_from_local_repo()
         logger.debug('GitHub Remote URL Detected from Local Repository is: {}'.format(code))
@@ -93,7 +92,10 @@ def aci_up(code=None, port=None, skip_secrets_generation=False, do_not_wait=Fals
 
     if not do_not_wait:
         poll_workflow_status(repo_name, check_run_id)
-        app_url = get_app_url(acr_details)
+        list_name = repo_name.split("/")
+        #TODO: Change it to add username in the example too.
+        app_name = list_name[1]
+        app_url = get_app_url(acr_details, app_name)
         app_url_with_port = app_url+":"+port+"/"
         print('Your app is deployed at: ',app_url_with_port)
     return
@@ -117,8 +119,12 @@ def get_yaml_template_for_repo(language, acr_details, repo_name, port):
     #TODO: ACR Credentials were fetched here. Now done using SP
     #TODO: Port Number required for Container Deployment. Hence passed to this method
     files_to_return = []
+
+    list_name = repo_name.split("/")
+    #TODO: Change it to add username in the example too.
+    APP_NAME_DEFAULT = list_name[1]
+
     from azext_aci.resources.resourcefiles import DEPLOY_TO_ACI_TEMPLATE
-    APP_NAME_DEFAULT = repo_name.split("/").join('-')
     files_to_return.append(Files(path='.github/workflows/main.yml',
         content=DEPLOY_TO_ACI_TEMPLATE
             .replace(APP_NAME_PLACEHOLDER, APP_NAME_DEFAULT)
@@ -165,10 +171,10 @@ def update_aci(cmd, instance, tags=None):
         c.set_param('tags', tags)
     return instance
 
-def get_app_url(acr_details):
+def get_app_url(acr_details, app_name):
     import subprocess as sb
     resource_group = acr_details['resourceGroup']
-    url_find_command = 'az container show --name {app_name} --resource-group {resource_group_name} --query ipAddress.fqdn'.format(app_name=APP_NAME_DEFAULT, resource_group_name=resource_group)
+    url_find_command = 'az container show --name {app_name} --resource-group {resource_group_name} --query ipAddress.fqdn'.format(app_name=app_name, resource_group_name=resource_group)
     url_result = sb.check_output(url_find_command, shell=True)
     url_result = url_result.decode().strip().lstrip("\"").rstrip("\"")
     app_url = "http://"+url_result

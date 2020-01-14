@@ -5,13 +5,18 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-
+import os
+import re
 from codecs import open
 from setuptools import setup, find_packages
 
 # TODO: Confirm this is the right version number you want and it matches your
 # HISTORY.rst entry.
-VERSION = '0.0.2'
+with open(os.path.join('azext_aci', 'version.py'), 'r') as fd:
+    VERSION = re.search(r'^VERSION\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE).group(1)
+
+if not VERSION:
+    raise RuntimeError('Cannot find version information')
 
 # The full list of classifiers is available at
 # https://pypi.python.org/pypi?%3Aaction=list_classifiers

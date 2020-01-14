@@ -46,7 +46,7 @@ jobs:
           scriptSource: 'inline'
           script: |
             import os
-            print(os.getcwd())
+            print(os.listdir())
             from azext_aci.version import VERSION
             print("##vso[task.setvariable variable=CLIVersion;isOutput=true"+VERSION)
             print("##vso[task.setvariable variable=RTitle;isOutput=true"+'Azure CLI Extension to Deploy to ACI ' + VERSION)

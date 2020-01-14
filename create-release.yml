@@ -39,16 +39,13 @@ jobs:
     dependsOn: 'Build_Publish_ACI_UP_CLI_Extension'
 
     steps:
-
-      - script: 'python -m pip install --user --upgrade pip; python -m pip --user install .'
-        workingDirectory: 'src/aci/'
       - task: PythonScript@0
         displayName: 'setupVersion'
         name: 'setupVersion'
         inputs:
           scriptSource: 'inline'
           script: |
-            from azext_aci.version import VERSION
+            from src.aci.azext_aci.version import VERSION
             print("##vso[task.setvariable variable=CLIVersion;isOutput=true"+VERSION)
             print("##vso[task.setvariable variable=RTitle;isOutput=true"+'Azure CLI Extension to Deploy to ACI ' + VERSION)
           workingDirectory: 'src/aci/'

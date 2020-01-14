@@ -1,5 +1,4 @@
 #TODO: Add for ACI Action when created!
-#TODO: Container Registry Username and Password are added after querying them. Change this later
 DEPLOY_TO_ACI_TEMPLATE = """name: CI
 on: [push, pull_request]
 

@@ -50,7 +50,6 @@ def choose_supported_language(languages):
     #TODO: This is stored here instead of in custom.py to get the packs path string. Check whether works properly or not!
     list_languages = list(languages.keys())
     first_language = list_languages[0]
-    #TODO: Test whether the packs folder paths work properly or not!
     abs_packs_path = FILE_ABSOLUTE_PATH + PACKS_ROOT_STRING
     language_packs_list = os.listdir(abs_packs_path)
     if first_language.lower() in language_packs_list:

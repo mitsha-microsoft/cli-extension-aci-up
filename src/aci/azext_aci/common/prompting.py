@@ -14,7 +14,6 @@ def delete_last_line():
 def prompt_user_friendly_choice_list_with_create(msg, a_list, default=1, help_string=None, error_msg=None):
     verify_is_a_tty_or_raise_error(error_msg=error_msg)
     options = '\n'.join([' [{}] {}{}'.format(i+1, x['name'] if isinstance(x, dict) and 'name' in x else x, ' - ' + x['desc'] if isinstance(x, dict) and 'desc' in x else '') for i,x in enumerate(a_list)])
-    #TODO: This option is just for show and doesnt actually work
     options += '\n [{}] Create a new Azure Container Registry'.format(len(a_list)+1)
     allowed_vals = list(range(1, len(a_list) + 2))
     linesToDelete = len(a_list) + 2

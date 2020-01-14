@@ -94,7 +94,7 @@ def aci_up(code=None, acr=None, port=None, skip_secrets_generation=False, do_not
         poll_workflow_status(repo_name, check_run_id)
         list_name = repo_name.split("/")
         #TODO: Change it to add username in the example too.
-        app_name = list_name[1]
+        app_name = list_name[1].lower()
         app_url = get_app_url(acr_details, app_name)
         app_url_with_port = app_url+":"+port+"/"
         print('Your app is deployed at: ',app_url_with_port)
@@ -116,13 +116,12 @@ def _get_repo_name_from_repo_url(repository_url):
     raise CLIError('Could not parse the Repository URL.')
 
 def get_yaml_template_for_repo(language, acr_details, repo_name, port):
-    #TODO: ACR Credentials were fetched here. Now done using SP
     #TODO: Port Number required for Container Deployment. Hence passed to this method
     files_to_return = []
 
     list_name = repo_name.split("/")
     #TODO: Change it to add username in the example too.
-    APP_NAME_DEFAULT = list_name[1]
+    APP_NAME_DEFAULT = list_name[1].lower()
 
     from azext_aci.resources.resourcefiles import DEPLOY_TO_ACI_TEMPLATE
     files_to_return.append(Files(path='.github/workflows/main.yml',

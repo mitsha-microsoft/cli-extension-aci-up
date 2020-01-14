@@ -48,6 +48,7 @@ jobs:
             from azext_aci.version import VERSION
             print("##vso[task.setvariable variable=CLIVersion;isOutput=true"+VERSION)
             print("##vso[task.setvariable variable=RTitle;isOutput=true"+'Azure CLI Extension to Deploy to ACI ' + VERSION)
+          workingDirectory: 'src/aci/'
 
   - job: 'Calculate_Sha_And_Create_Release'
     dependsOn: 'Run_Test'

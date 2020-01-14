@@ -40,7 +40,7 @@ jobs:
 
     steps:
 
-      - script: 'python -m pip install .'
+      - script: 'python -m pip install --upgrade pip; python -m pip install .'
         workingDirectory: 'src/aci/'
       - task: PythonScript@0
         displayName: 'setupVersion'
